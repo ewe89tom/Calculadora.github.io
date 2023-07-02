@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Calculadora de multa de reembolso</title>
+  <style>
+    body {
+      background-color: #FED8B1;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      margin: 50px auto;
+      width: 300px;
+      background-color: #FFF;
+      padding: 20px;
+      border-radius: 5px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 5px;
+      border-radius: 3px;
+      border: 1px solid #CCC;
+    }
+
+    .form-group input:disabled {
+      background-color: #F8F8F8;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .btn {
+      background-color: #FFA500;
+      color: #FFF;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .btn-clear {
+      background-color: #FFA500;
+      color: #FFF;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      float: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Calculadora de multa de reembolso</h2>
+
+    <div class="form-group">
+      <label for="valor-tarifa">Valor da Tarifa:</label>
+      <input type="text" id="valor-tarifa" onchange="validarValor(this)">
+    </div>
+
+    <div class="form-group">
+      <label for="change-fee">CHANGE FEE:</label>
+      <input type="text" id="change-fee" onchange="validarValor(this)">
+    </div>
+
+    <div class="form-group">
+      <label for="valor-residual">Valor Residual:</label>
+      <input type="text" id="valor-residual" readonly style="background-color: #E8E8E8; cursor: default;">
+    </div>
+
+    <div class="form-group">
+      <label for="percentual-multa">Percentual da Multa de Reembolso (%):</label>
+      <input type="text" id="percentual-multa" onchange="verificarPercentual()">
+    </div>
+
+    <button id="calcular-btn" class="btn" disabled onclick="calcularMulta()">Calcular</button>
+
+    <button id="limpar-btn" class="btn-clear" onclick="limparCampos()">Limpar</button>
+
+    <div class="form-group result">
+      <label for="other-fee">OTHER FEE:</label>
+      <input type="text" id="other-fee" readonly style="width: 50%;">
+      <button id="copiar-btn" class="btn" onclick="copiarOtherFee()">Copiar Other Fee</button>
+    </div>
+  </div>
+
+  <script>
+    const valorTarifaInput = document.getElementById('valor-tarifa');
+    const changeFeeInput = document.getElementById('change-fee');
+    const valorResidualInput = document.getElementById('valor-residual');
+    const percentualMultaInput = document.getElementById('percentual-multa');
+    const calcularBtn = document.getElementById('calcular-btn');
+    const limparBtn = document.getElementById('limpar-btn');
+    const otherFeeInput = document.getElementById('other-fee');
+
+    function validarValor(input) {
+      const valor = input.value;
+      const regex = /^[0-9]+(\.[0-9]{0,2})?$/;
+
+      if (!regex.test(valor)) {
+        mostrarMensagemErro(input);
+      } else {
+        formatarValor(input);
+        atualizarValorResidual();
+      }
+    }
+
+    function mostrarMensagemErro(input) {
+      alert("Formato de valor inválido! Utilize apenas números e, opcionalmente, um ponto para separar os centavos.");
+      input.value = '';
+    }
+
+    function formatarValor(input) {
+      const valor = input.value;
+      const valorFormatado = parseFloat(valor).toFixed(2);
+      input.value = valorFormatado;
+    }
+
+    function atualizarValorResidual() {
+      const valorTarifa = parseFloat(valorTarifaInput.value);
+      const changeFee = parseFloat(changeFeeInput.value);
+
+      if (!isNaN(valorTarifa) && !isNaN(changeFee)) {
+        const valorResidual = (valorTarifa - changeFee).toFixed(2);
+        valorResidualInput.value = valorResidual;
+        calcularBtn.removeAttribute('disabled');
+      } else {
+        valorResidualInput.value = '';
+        calcularBtn.setAttribute('disabled', 'disabled');
+      }
+    }
+
+    function verificarPercentual() {
+      const percentualMulta = parseInt(percentualMultaInput.value);
+      if (percentualMulta >= 0 && percentualMulta <= 100) {
+        calcularBtn.removeAttribute('disabled');
+      } else {
+        calcularBtn.setAttribute('disabled', 'disabled');
+        alert('O valor do Percentual da Multa de Reembolso (%) deve estar entre 0 e 100.');
+      }
+    }
+
+    function calcularMulta() {
+      const valorResidual = parseFloat(valorResidualInput.value);
+      const percentualMulta = parseInt(percentualMultaInput.value);
+
+      const otherFee = (valorResidual * percentualMulta / 100).toFixed(2);
+      otherFeeInput.value = otherFee;
+
+      bloquearCampos();
+    }
+
+    function limparCampos() {
+      valorTarifaInput.value = '';
+      changeFeeInput.value = '';
+      valorResidualInput.value = '';
+      percentualMultaInput.value = '';
+      otherFeeInput.value = '';
+      desbloquearCampos();
+    }
+
+    function bloquearCampos() {
+      valorTarifaInput.setAttribute('disabled', 'disabled');
+      changeFeeInput.setAttribute('disabled', 'disabled');
+      valorResidualInput.setAttribute('disabled', 'disabled');
+      percentualMultaInput.setAttribute('disabled', 'disabled');
+      calcularBtn.setAttribute('disabled', 'disabled');
+    }
+
+    function desbloquearCampos() {
+      valorTarifaInput.removeAttribute('disabled');
+      changeFeeInput.removeAttribute('disabled');
+      valorResidualInput.removeAttribute('disabled');
+      percentualMultaInput.removeAttribute('disabled');
+      calcularBtn.removeAttribute('disabled');
+    }
+
+    function copiarOtherFee() {
+      otherFeeInput.select();
+      document.execCommand('copy');
+      alert('O valor do Other Fee foi copiado para a área de transferência.');
+    }
+  </script>
+</body>
+</html>
